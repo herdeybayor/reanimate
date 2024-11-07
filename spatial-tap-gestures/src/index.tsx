@@ -16,7 +16,12 @@ const App = () => {
   const top = useSharedValue(0);
   const scale = useSharedValue(0);
 
+  const previousLeft = useSharedValue(0);
+  const previousTop = useSharedValue(0);
+
   const tapGesture = Gesture.Tap().onEnd(event => {
+    previousLeft.value = left.value;
+    previousTop.value = top.value;
     left.value = event.x - CIRCLE_RADIUS;
     top.value = event.y - CIRCLE_RADIUS;
   });
@@ -29,6 +34,13 @@ const App = () => {
     };
   }, []);
 
+  const rPreviousStyle = useAnimatedStyle(() => {
+    return {
+      left: previousLeft.value,
+      top: previousTop.value,
+    };
+  }, []);
+
   useAnimatedReaction(
     () => {
       return left.value;
@@ -37,7 +49,7 @@ const App = () => {
       if (prev && curr !== prev) {
         cancelAnimation(scale);
         scale.value = 0;
-        scale.value = withSpring(1);
+        scale.value = withSpring(1, { mass: 0.5 });
       }
     },
     [left],
@@ -47,6 +59,7 @@ const App = () => {
       <Animated.View style={styles.container}>
         <StatusBar style="light" />
         <Animated.View style={[styles.baseCircle, rStyle]} />
+        <Animated.View style={[styles.baseCircle, rPreviousStyle]} />
       </Animated.View>
     </GestureDetector>
   );
