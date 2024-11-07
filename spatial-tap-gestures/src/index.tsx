@@ -3,10 +3,13 @@ import { StyleSheet } from 'react-native';
 import { Gesture, GestureDetector } from 'react-native-gesture-handler';
 import Animated, {
   cancelAnimation,
+  Easing,
   useAnimatedReaction,
   useAnimatedStyle,
+  useDerivedValue,
   useSharedValue,
   withSpring,
+  withTiming,
 } from 'react-native-reanimated';
 
 const CIRCLE_RADIUS = 30;
@@ -54,12 +57,47 @@ const App = () => {
     },
     [left],
   );
+
+  const animatedLeft = useDerivedValue(
+    () =>
+      withTiming(left.value, {
+        duration: 1000,
+        easing: Easing.inOut(Easing.quad),
+      }),
+    [left],
+  );
+  const animatedTop = useDerivedValue(
+    () =>
+      withTiming(top.value, {
+        duration: 1000,
+        easing: Easing.inOut(Easing.quad),
+      }),
+    [top],
+  );
+
+  const rMagicCircleStyle = useAnimatedStyle(() => {
+    return {
+      left: animatedLeft.value,
+      top: animatedTop.value,
+    };
+  }, []);
+
   return (
     <GestureDetector gesture={tapGesture}>
       <Animated.View style={styles.container}>
         <StatusBar style="light" />
         <Animated.View style={[styles.baseCircle, rStyle]} />
         <Animated.View style={[styles.baseCircle, rPreviousStyle]} />
+
+        <Animated.View
+          style={[
+            styles.baseCircle,
+            rMagicCircleStyle,
+            {
+              backgroundColor: '#0074d3',
+            },
+          ]}
+        />
       </Animated.View>
     </GestureDetector>
   );
